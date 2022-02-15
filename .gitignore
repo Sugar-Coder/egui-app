@@ -1,3 +1,5 @@
 /target
 .idea
+docs/egui_app.js
+docs/egui_app_bg.wasm
 
