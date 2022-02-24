@@ -1,10 +1,13 @@
 use std::fmt::{Display, Formatter};
 use chrono::{DateTime, Local, Duration, Timelike};
-use crate::app::app_timer::Status::{FINISHED, READY, RELAXING, WORKING};
+use crate::app::app_timer::Status::{Finished, Ready, Relaxing, Working};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 enum Status{
-    READY, WORKING, FINISHED, RELAXING
+    Ready,
+    Working,
+    Finished,
+    Relaxing
 }
 
 pub struct Timer {
@@ -26,7 +29,7 @@ impl Timer {
             working_time: 0,
             rest_time: 0,
             time: 0,
-            status: READY,
+            status: Ready,
             countdown: false,
             text: "".to_string(),
 
@@ -38,31 +41,31 @@ impl Timer {
     pub fn setup(&mut self, worktime: u32, resttime: u32) {
         self.working_time = worktime;
         self.rest_time = resttime;
-        self.status = READY;
+        self.status = Ready;
     }
 
     pub fn processing(&mut self) {
         match self.status {
-            READY => {
+            Ready => {
                 self.time = self.working_time;
                 self.text = "Ready".to_string();
             }
-            Status::WORKING => {
+            Working => {
                 self.time =  self.finished_at.time().num_seconds_from_midnight() - Local::now().time().num_seconds_from_midnight();
                 self.text = "Working".to_string();
                 if Local::now() >= self.finished_at {
-                    self.status = FINISHED;
+                    self.status = Finished;
                 }
             }
-            Status::FINISHED => {
+            Finished => {
                 self.time = 0;
                 self.text = "Finished".to_string();
             }
-            Status::RELAXING => {
+            Relaxing => {
                 self.time = self.finished_at.time().num_seconds_from_midnight() - Local::now().time().num_seconds_from_midnight();
                 self.text = "Relax".to_string();
                 if Local::now() >= self.finished_at {
-                    self.status = READY;
+                    self.status = Ready;
                 }
             }
         }
@@ -73,23 +76,23 @@ impl Timer {
         self.rest_time = resttime;
 
         match self.status {
-            READY => {
-                self.status = WORKING;
+            Ready => {
+                self.status = Working;
                 self.started_at = Local::now();
                 self.finished_at = self.started_at + Duration::seconds(self.working_time as i64);
             }
-            WORKING => {
-                self.status = FINISHED;
+            Working => {
+                self.status = Finished;
                 self.started_at = Local::now();
                 self.finished_at = self.started_at;
             }
-            FINISHED => {
-                self.status = RELAXING;
+            Finished => {
+                self.status = Relaxing;
                 self.started_at = Local::now();
                 self.finished_at = self.started_at + Duration::seconds(self.rest_time as i64);
             }
-            RELAXING => {
-                self.status = READY;
+            Relaxing => {
+                self.status = Ready;
                 self.started_at = Local::now();
                 self.finished_at = self.started_at;
             }
@@ -107,7 +110,21 @@ impl Display for Timer {
 fn test_timer() {
     let mut timer = Timer::new();
     timer.setup(20 * 60, 5 * 60);
-    loop {
 
-    }
+    timer.processing();
+    timer.next(20 * 60, 5 * 60);
+    timer.processing();
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    println!("After One seconds: timer={}", timer.time);
+
+    timer.next(10, 5);
+    timer.processing();
+    println!("{}", timer.text);
+    assert_eq!(timer.status, Finished);
+
+    timer.next(10, 5);
+    timer.processing();
+    assert_eq!(timer.status, Relaxing);
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    println!("After One seconds: timer={}", timer.time);
 }
