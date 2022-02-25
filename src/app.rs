@@ -97,6 +97,6 @@ impl epi::App for TemplateApp {
                         frame.quit();
                     }
                 });
-        });
+            });
     }
 }

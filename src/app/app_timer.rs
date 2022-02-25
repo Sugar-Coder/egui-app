@@ -48,22 +48,22 @@ impl Timer {
         match self.status {
             Ready => {
                 self.time = self.working_time;
-                self.text = "Ready".to_string();
+                self.text = "💡Ready".to_string();
             }
             Working => {
                 self.time =  self.finished_at.time().num_seconds_from_midnight() - Local::now().time().num_seconds_from_midnight();
-                self.text = "Working".to_string();
+                self.text = "💻Working".to_string();
                 if Local::now() >= self.finished_at {
                     self.status = Finished;
                 }
             }
             Finished => {
                 self.time = 0;
-                self.text = "Finished".to_string();
+                self.text = "😀Finished".to_string();
             }
             Relaxing => {
                 self.time = self.finished_at.time().num_seconds_from_midnight() - Local::now().time().num_seconds_from_midnight();
-                self.text = "Relax".to_string();
+                self.text = "💭Relax".to_string();
                 if Local::now() >= self.finished_at {
                     self.status = Ready;
                 }
@@ -112,10 +112,11 @@ fn test_timer() {
     timer.setup(20 * 60, 5 * 60);
 
     timer.processing();
-    timer.next(20 * 60, 5 * 60);
-    timer.processing();
-    std::thread::sleep(std::time::Duration::from_secs(1));
+    timer.next(2, 5 * 60);
+    timer.processing(); // working
+    std::thread::sleep(std::time::Duration::from_secs(5));
     println!("After One seconds: timer={}", timer.time);
+    println!("After 5 seconds: status={:?}", timer.status);
 
     timer.next(10, 5);
     timer.processing();
