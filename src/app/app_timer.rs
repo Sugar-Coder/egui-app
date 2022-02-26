@@ -3,7 +3,7 @@ use chrono::{DateTime, Local, Duration, Timelike};
 use crate::app::app_timer::Status::{Finished, Ready, Relaxing, Working};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
-enum Status{
+pub enum Status{
     Ready,
     Working,
     Finished,
@@ -15,12 +15,12 @@ pub struct Timer {
     working_time: u32,
     rest_time: u32,
     pub time: u32,
-    status: Status,
+    pub status: Status,
     countdown: bool,
     pub text: String,
 
-    started_at: DateTime<Local>,
-    finished_at: DateTime<Local>,
+    pub started_at: DateTime<Local>,
+    pub finished_at: DateTime<Local>,
 }
 
 impl Timer {

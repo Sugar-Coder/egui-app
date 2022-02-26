@@ -1,5 +1,6 @@
 use eframe::{egui, epi};
 use eframe::egui::{Id, Pos2};
+use chrono::Timelike;
 
 mod app_timer;
 use app_timer::Timer;
@@ -72,8 +73,12 @@ impl epi::App for TemplateApp {
             // The central panel the region left after adding TopPanel's and SidePanel's
             // ui.add(egui::Slider::new(rest_time, 0..=10).text("rest_time"));
             // ctx.request_repaint(); // called in fractal_clock.ui()
-
-            fractal_clock.ui(ui, crate::seconds_since_midnight());
+            let mut finish_time = None;
+            if timer.status == app_timer::Status::Working || timer.status == app_timer::Status::Relaxing {
+                let finish_nativetime = timer.finished_at.time();
+                finish_time = Some(finish_nativetime.num_seconds_from_midnight() as f64 + 1e-9 * (finish_nativetime.nanosecond() as f64));
+            }
+            fractal_clock.ui(ui, crate::seconds_since_midnight(), finish_time);
 
             egui::warn_if_debug_build(ui);
         });

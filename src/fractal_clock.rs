@@ -42,12 +42,12 @@ impl epi::App for FractalClock {
     fn update(&mut self, ctx: &egui::CtxRef, _frame: &epi::Frame) {
         egui::CentralPanel::default()
             .frame(Frame::dark_canvas(&ctx.style()))
-            .show(ctx, |ui| self.ui(ui, crate::seconds_since_midnight()));
+            .show(ctx, |ui| self.ui(ui, crate::seconds_since_midnight(), None));
     }
 }
 
 impl FractalClock {
-    pub fn ui(&mut self, ui: &mut Ui, seconds_since_midnight: Option<f64>) {
+    pub fn ui(&mut self, ui: &mut Ui, seconds_since_midnight: Option<f64>, finish_time: Option<f64>) {
         if !self.paused {
             self.time = seconds_since_midnight.unwrap_or_else(|| ui.input().time);
             ui.ctx().request_repaint();
@@ -58,7 +58,7 @@ impl FractalClock {
             ui.layer_id(),
             ui.available_rect_before_wrap(),
         );
-        self.paint(&painter);
+        self.paint(&painter, finish_time);
         // Make sure we allocate what we used (everything)
         ui.expand_to_include_rect(painter.clip_rect());
 
@@ -102,7 +102,7 @@ impl FractalClock {
         // ui.add(crate::__egui_github_link_file!());
     }
 
-    fn paint(&mut self, painter: &Painter) {
+    fn paint(&mut self, painter: &Painter, finish_time: Option<f64>) {
         struct Hand {
             length: f32,
             angle: f32,
@@ -122,7 +122,7 @@ impl FractalClock {
         let angle_from_period =
             |period| TAU * (self.time.rem_euclid(period) / period) as f32 - TAU / 4.0;
 
-        let hands = [
+        let mut hands = vec![
             // Second hand:
             Hand::from_length_angle(self.length_factor, angle_from_period(60.0)),
             // Minute hand:
@@ -130,6 +130,14 @@ impl FractalClock {
             // Hour hand:
             Hand::from_length_angle(0.5, angle_from_period(12.0 * 60.0 * 60.0)),
         ];
+
+        if let Some(end_time) = finish_time {
+            let angle_from_period_finish =
+                |period| TAU * (end_time.rem_euclid(period) / period) as f32 - TAU / 4.0;
+            // hands.push(Hand::from_length_angle(self.length_factor, angle_from_period_finish(60.0)));
+            hands.push(Hand::from_length_angle(self.length_factor, angle_from_period_finish(60.0 * 60.0)));
+            hands.push(Hand::from_length_angle(0.5, angle_from_period_finish(12.0 * 60.0 * 60.0)));
+        }
 
         let mut shapes: Vec<Shape> = Vec::new();
 
@@ -171,7 +179,13 @@ impl FractalClock {
         for (i, hand) in hands.iter().enumerate() {
             let center = pos2(0.0, 0.0);
             let end = center + hand.vec;
-            paint_line([center, end], Color32::from_additive_luminance(255), width);
+            let mut color = Color32::from_additive_luminance(255);
+            if i == 3 {
+                color = Color32::GREEN;
+            } else if i == 4 {
+                color = Color32::GOLD;
+            }
+            paint_line([center, end], color, width);
             if i < 2 {
                 nodes.push(Node {
                     pos: end,
