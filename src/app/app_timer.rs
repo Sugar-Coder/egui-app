@@ -16,7 +16,6 @@ pub struct Timer {
     rest_time: u32,
     pub time: u32,
     pub status: Status,
-    countdown: bool,
     pub text: String,
 
     pub started_at: DateTime<Local>,
@@ -30,7 +29,6 @@ impl Timer {
             rest_time: 0,
             time: 0,
             status: Ready,
-            countdown: false,
             text: "".to_string(),
 
             started_at: Local::now(),
@@ -102,7 +100,7 @@ impl Timer {
 
 impl Display for Timer {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "({}, {}, {:?}, {})", self.working_time, self.rest_time, self.status, self.countdown)
+        write!(f, "({}, {}, {:?})", self.working_time, self.rest_time, self.status)
     }
 }
 

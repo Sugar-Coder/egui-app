@@ -15,6 +15,7 @@ pub struct TemplateApp {
     working_time: u32,
 
     fractal_clock: FractalClock,
+    show_animation: bool,
 
     // this how you opt-out of serialization of a member
     #[cfg_attr(feature = "persistence", serde(skip))]
@@ -28,6 +29,7 @@ impl Default for TemplateApp {
             // Example stuff:
             rest_time: 5,
             working_time: 25,
+            show_animation: true,
             timer: Timer::new(),
             fractal_clock: FractalClock::default(),
         }
@@ -65,7 +67,7 @@ impl epi::App for TemplateApp {
     /// Called each time the UI needs repainting, which may be many times per second.
     /// Put your widgets into a `SidePanel`, `TopPanel`, `CentralPanel`, `Window` or `Area`.
     fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
-        let Self { rest_time, working_time, timer, fractal_clock} = self;
+        let Self { rest_time, working_time, show_animation: close_animation, timer, fractal_clock} = self;
 
         timer.processing();
 
@@ -78,7 +80,9 @@ impl epi::App for TemplateApp {
                 let finish_nativetime = timer.finished_at.time();
                 finish_time = Some(finish_nativetime.num_seconds_from_midnight() as f64 + 1e-9 * (finish_nativetime.nanosecond() as f64));
             }
-            fractal_clock.ui(ui, crate::seconds_since_midnight(), finish_time);
+            if *close_animation {
+                fractal_clock.ui(ui, crate::seconds_since_midnight(), finish_time);
+            }
 
             egui::warn_if_debug_build(ui);
         });
@@ -101,6 +105,8 @@ impl epi::App for TemplateApp {
                     if ui.button("Quit").clicked() {
                         frame.quit();
                     }
+                    ui.checkbox(close_animation, "Animation")
+                        .on_hover_text("Click to open/close animation");
                 });
             });
     }

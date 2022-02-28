@@ -1,5 +1,14 @@
-# My README
-todo: setup_web
+# 🦀️Rumato🍅
+A tomato timer written in Rust.
+Inspiration by [fractal clock](https://www.egui.rs/#clock).
+
+Screen shot 
+
+<img src="./docs/rumato.png" width="250px">
+
+```shell
+$ cargo run --release
+```
 
 # eframe template
 
