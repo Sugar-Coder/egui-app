@@ -82,6 +82,8 @@ impl epi::App for TemplateApp {
             }
             if *close_animation {
                 fractal_clock.ui(ui, crate::seconds_since_midnight(), finish_time);
+            } else {
+                ui.ctx().request_repaint();
             }
 
             egui::warn_if_debug_build(ui);
